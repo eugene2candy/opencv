@@ -56,7 +56,10 @@ scaled to fit the 0 to 1 range.
 
 \f[V  \leftarrow max(R,G,B)\f]
 \f[S  \leftarrow \fork{\frac{V-min(R,G,B)}{V}}{if \(V \neq 0\)}{0}{otherwise}\f]
-\f[H  \leftarrow \forkthree{{60(G - B)}/{(V-min(R,G,B))}}{if \(V=R\)}{{120+60(B - R)}/{(V-min(R,G,B))}}{if \(V=G\)}{{240+60(R - G)}/{(V-min(R,G,B))}}{if \(V=B\)}\f]
+\f[H  \leftarrow \forkfour{{60(G - B)}/{(V-min(R,G,B))}}{if \(V=R\)}
+  {{120+60(B - R)}/{(V-min(R,G,B))}}{if \(V=G\)}
+  {{240+60(R - G)}/{(V-min(R,G,B))}}{if \(V=B\)}
+  {0}{if  \(R=G=B\)}\f]
 If \f$H<0\f$ then \f$H \leftarrow H+360\f$ . On output \f$0 \leq V \leq 1\f$, \f$0 \leq S \leq 1\f$,
 \f$0 \leq H \leq 360\f$ .
 
@@ -78,9 +81,10 @@ scaled to fit the 0 to 1 range.
 \f[L  \leftarrow \frac{V_{max} + V_{min}}{2}\f]
 \f[S  \leftarrow \fork { \frac{V_{max} - V_{min}}{V_{max} + V_{min}} }{if  \(L < 0.5\) }
     { \frac{V_{max} - V_{min}}{2 - (V_{max} + V_{min})} }{if  \(L \ge 0.5\) }\f]
-\f[H  \leftarrow \forkthree {{60(G - B)}/{(V_{max}-V_{min})}}{if  \(V_{max}=R\) }
+\f[H  \leftarrow \forkfour {{60(G - B)}/{(V_{max}-V_{min})}}{if  \(V_{max}=R\) }
   {{120+60(B - R)}/{(V_{max}-V_{min})}}{if  \(V_{max}=G\) }
-  {{240+60(R - G)}/{(V_{max}-V_{min})}}{if  \(V_{max}=B\) }\f]
+  {{240+60(R - G)}/{(V_{max}-V_{min})}}{if  \(V_{max}=B\) }
+  {0}{if  \(R=G=B\) }\f]
 If \f$H<0\f$ then \f$H \leftarrow H+360\f$ . On output \f$0 \leq L \leq 1\f$, \f$0 \leq S \leq
 1\f$, \f$0 \leq H \leq 360\f$ .
 
@@ -135,6 +139,8 @@ The values are then converted to the destination data type:
 -   8-bit images:  \f$L  \leftarrow 255/100 L, \; u  \leftarrow 255/354 (u + 134), \; v  \leftarrow 255/262 (v + 140)\f$
 -   16-bit images:   (currently not supported)
 -   32-bit images:   L, u, and v are left as is
+
+Note that when converting integer Luv images to RGB the intermediate X, Y and Z values are truncated to \f$ [0, 2] \f$ range to fit white point limitations. It may lead to incorrect representation of colors with odd XYZ values.
 
 The above formulae for converting RGB to/from various color spaces have been taken from multiple
 sources on the web, primarily from the Charles Poynton site <http://www.poynton.com/ColorFAQ.html>

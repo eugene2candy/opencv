@@ -48,7 +48,7 @@
 
 #ifdef HAVE_OPENCL
 
-namespace cvtest {
+namespace opencv_test {
 namespace ocl {
 
 ////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ PARAM_TEST_CASE(Canny, Channels, ApertureSize, L2gradient, UseRoi)
     void generateTestData()
     {
         Mat img = readImageType("shared/fruits.png", CV_8UC(cn));
-        ASSERT_FALSE(img.empty()) << "cann't load shared/fruits.png";
+        ASSERT_FALSE(img.empty()) << "can't load shared/fruits.png";
 
         Size roiSize = img.size();
         int type = img.type();
@@ -133,6 +133,8 @@ OCL_INSTANTIATE_TEST_CASE_P(ImgProc, Canny, testing::Combine(
                                 testing::Values(L2gradient(false), L2gradient(true)),
                                 testing::Values(UseRoi(false), UseRoi(true))));
 
-} } // namespace cvtest::ocl
+} // namespace ocl
+
+} // namespace opencv_test
 
 #endif // HAVE_OPENCL

@@ -54,7 +54,7 @@
 
 #ifdef HAVE_OPENCL
 
-namespace cvtest {
+namespace opencv_test {
 namespace ocl {
 
 PARAM_TEST_CASE(FilterTestBase, MatType,
@@ -342,7 +342,7 @@ OCL_TEST_P(GaussianBlurTest, Mat)
     }
 }
 
-PARAM_TEST_CASE(GaussianBlur3x3_cols16_rows2_Base, MatType,
+PARAM_TEST_CASE(GaussianBlur_multicols_Base, MatType,
                 int, // kernel size
                 Size, // dx, dy
                 BorderType, // border type
@@ -372,11 +372,18 @@ PARAM_TEST_CASE(GaussianBlur3x3_cols16_rows2_Base, MatType,
 
     void random_roi()
     {
-        size = Size(3, 3);
+        size = Size(ksize, ksize);
 
         Size roiSize = randomSize(size.width, MAX_VALUE, size.height, MAX_VALUE);
-        roiSize.width = std::max(size.width + 13, roiSize.width & (~0xf));
-        roiSize.height = std::max(size.height + 1, roiSize.height & (~0x1));
+        if (ksize == 3)
+        {
+            roiSize.width = std::max((size.width + 15) & 0x10, roiSize.width & (~0xf));
+            roiSize.height = std::max(size.height + 1, roiSize.height & (~0x1));
+        }
+        else if (ksize == 5)
+        {
+            roiSize.width = std::max((size.width + 3) & 0x4, roiSize.width & (~0x3));
+        }
 
         Border srcBorder = randomBorder(0, useRoi ? MAX_VALUE : 0);
         randomSubMat(src, src_roi, roiSize, srcBorder, type, 5, 256);
@@ -402,9 +409,9 @@ PARAM_TEST_CASE(GaussianBlur3x3_cols16_rows2_Base, MatType,
     }
 };
 
-typedef GaussianBlur3x3_cols16_rows2_Base GaussianBlur3x3_cols16_rows2;
+typedef GaussianBlur_multicols_Base GaussianBlur_multicols;
 
-OCL_TEST_P(GaussianBlur3x3_cols16_rows2, Mat)
+OCL_TEST_P(GaussianBlur_multicols, Mat)
 {
     Size kernelSize(ksize, ksize);
 
@@ -435,7 +442,7 @@ OCL_TEST_P(Erode, Mat)
     for (int j = 0; j < test_loop_times; j++)
     {
         random_roi();
-        Mat kernel = ksize==0 ? Mat() : randomMat(kernelSize, CV_8UC1, 0, 3);
+        Mat kernel = ksize==0 ? Mat() : randomMat(kernelSize, CV_8UC1, 0, 2);
 
         OCL_OFF(cv::erode(src_roi, dst_roi, kernel, Point(-1, -1), iterations) );
         OCL_ON(cv::erode(usrc_roi, udst_roi, kernel, Point(-1, -1), iterations) );
@@ -457,7 +464,7 @@ OCL_TEST_P(Dilate, Mat)
     for (int j = 0; j < test_loop_times; j++)
     {
         random_roi();
-        Mat kernel = ksize==0 ? Mat() : randomMat(kernelSize, CV_8UC1, 0, 3);
+        Mat kernel = ksize==0 ? Mat() : randomMat(kernelSize, CV_8UC1, 0, 2);
 
         OCL_OFF(cv::dilate(src_roi, dst_roi, kernel, Point(-1, -1), iterations) );
         OCL_ON(cv::dilate(usrc_roi, udst_roi, kernel, Point(-1, -1), iterations) );
@@ -710,9 +717,9 @@ OCL_INSTANTIATE_TEST_CASE_P(Filter, GaussianBlurTest, Combine(
                             Bool(),
                             Values(1))); // not used
 
-OCL_INSTANTIATE_TEST_CASE_P(Filter, GaussianBlur3x3_cols16_rows2, Combine(
+OCL_INSTANTIATE_TEST_CASE_P(Filter, GaussianBlur_multicols, Combine(
                             Values((MatType)CV_8UC1),
-                            Values(3), // kernel size
+                            Values(3, 5), // kernel size
                             Values(Size(0, 0)), // not used
                             FILTER_BORDER_SET_NO_WRAP_NO_ISOLATED,
                             Values(0.0), // not used
@@ -721,19 +728,19 @@ OCL_INSTANTIATE_TEST_CASE_P(Filter, GaussianBlur3x3_cols16_rows2, Combine(
 
 OCL_INSTANTIATE_TEST_CASE_P(Filter, Erode, Combine(
                             Values(CV_8UC1, CV_8UC3, CV_8UC4, CV_32FC1, CV_32FC3, CV_32FC4, CV_64FC1, CV_64FC4),
-                            Values(0, 3, 5, 7), // kernel size, 0 means kernel = Mat()
+                            Values(0, 5, 7, 9), // kernel size, 0 means kernel = Mat()
                             Values(Size(0, 0)), //not used
                             Values((BorderType)BORDER_CONSTANT),
-                            Values(1.0, 2.0, 3.0),
+                            Values(1.0, 2.0, 3.0, 4.0),
                             Bool(),
                             Values(1))); // not used
 
 OCL_INSTANTIATE_TEST_CASE_P(Filter, Dilate, Combine(
                             Values(CV_8UC1, CV_8UC3, CV_8UC4, CV_32FC1, CV_32FC3, CV_32FC4, CV_64FC1, CV_64FC4),
-                            Values(0, 3, 5, 7), // kernel size, 0 means kernel = Mat()
+                            Values(0, 3, 5, 7, 9), // kernel size, 0 means kernel = Mat()
                             Values(Size(0, 0)), // not used
                             Values((BorderType)BORDER_CONSTANT),
-                            Values(1.0, 2.0, 3.0),
+                            Values(1.0, 2.0, 3.0, 4.0),
                             Bool(),
                             Values(1))); // not used
 
@@ -754,6 +761,6 @@ OCL_INSTANTIATE_TEST_CASE_P(Filter, MorphologyEx, Combine(
                             Bool()));
 
 
-} } // namespace cvtest::ocl
+} } // namespace opencv_test::ocl
 
 #endif // HAVE_OPENCL

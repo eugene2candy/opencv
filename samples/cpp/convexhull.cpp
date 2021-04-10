@@ -5,11 +5,11 @@
 using namespace cv;
 using namespace std;
 
-static void help()
+static void help(char** argv)
 {
     cout << "\nThis sample program demonstrates the use of the convexHull() function\n"
          << "Call:\n"
-         << "./convexhull\n" << endl;
+         << argv[0] << endl;
 }
 
 int main( int argc, char** argv )
@@ -17,7 +17,7 @@ int main( int argc, char** argv )
     CommandLineParser parser(argc, argv, "{help h||}");
     if (parser.has("help"))
     {
-        help();
+        help(argv);
         return 0;
     }
     Mat img(500, 500, CV_8UC3);
@@ -25,7 +25,6 @@ int main( int argc, char** argv )
 
     for(;;)
     {
-        char key;
         int i, count = (unsigned)rng%100 + 1;
 
         vector<Point> points;
@@ -58,7 +57,7 @@ int main( int argc, char** argv )
 
         imshow("hull", img);
 
-        key = (char)waitKey();
+        char key = (char)waitKey();
         if( key == 27 || key == 'q' || key == 'Q' ) // 'ESC'
             break;
     }
